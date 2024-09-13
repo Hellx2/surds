@@ -19,21 +19,12 @@ std::ostream &operator<<(std::ostream& op, Fraction fraction);
 void simplify();
 void expand();
 
-Fraction calcInner(String inner);
-
-Fraction calcAdds(String str);
-Fraction calcMins(String str);
-Fraction calcMuls(String str);
-Fraction calcDivs(String str);
-
-// TODO: Implement simplification of multi-surd expressions
-Surd surdAdds(Vec<Surd> surds);
-Surd surdMins(Vec<Surd> surds);
-Surd surdMuls(Vec<Surd> surds);
-Surd surdDivs(Vec<Surd> surds);
-
 Surd parseSurd(String &temp, size_t index);
 
+/**
+The main function, asks whether the user wants to
+simplify or expand surds, or if they want to exit.
+ */
 int main() {
     std::cout << "The following functions are available:" << std::endl
               << " (1) Simplify" << std::endl
@@ -61,6 +52,13 @@ int main() {
     }
 }
 
+/**
+The function called when the user chooses the option
+for simplifying surds. Asks for surd(s) to simplify
+and then goes through each one and passes them to
+the `parseSurd` function before displaying them to
+the user.
+ */
 void simplify() {
     String surd;
 
@@ -98,7 +96,14 @@ void simplify() {
     }
 }
 
-// delimiter is a reference to reduce allocations
+/**
+Splits a string into multiple substrings by the
+given delimiter.
+
+Notes:
+ - Delimiter is a reference to reduce allocations.
+ - Not my code, came from StackOverflow
+ */
 Vec<String> split(String s, const String& delimiter) {
     Vec<String> tokens;
     size_t pos = 0;
@@ -115,10 +120,90 @@ Vec<String> split(String s, const String& delimiter) {
     return tokens;
 }
 
-Fraction calcInner(String inner) {
-    return calcAdds(inner);
+/**
+Takes a string containing only values separated
+by `/` and performs division between them all as
+fractions.
+ */
+Fraction calcDivs(String str) {
+    Vec<double> divVals;
+    Vec<String> x = split(str, "/");
+
+    for (int i = 0; i < x.size(); ++i) {
+        trim(x[i]);
+        
+        divVals.push_back(std::stod(x[i]));
+    }
+
+    Fraction retval(divVals[0]);
+    for (int i = 1; i < divVals.size(); ++i) {
+        retval = retval / Fraction(divVals[i]);
+    }
+
+    return retval;
 }
 
+/**
+Takes a string containing expressions separated
+by `*` and performs multiplication between the
+parsed expressions as fractions.
+ */
+Fraction calcMuls(String str) {
+    Vec<Fraction> mulVals;
+    Vec<String> x = split(str, "*");
+
+    for (int i = 0; i < x.size(); ++i) {
+        trim(x[i]);
+
+        if ((int)x[i].find('/') != -1) {
+            mulVals.push_back(calcDivs(x[i]));
+        } else {
+            mulVals.push_back(Fraction(std::stod(x[i])));
+        }
+    }
+
+    Fraction retval(1.0);
+
+    for (int i = 0; i < mulVals.size(); i++) {
+        retval = retval * mulVals[i];
+    }
+
+    return retval;
+}
+
+/**
+Takes a string containing expressions separated
+by `-` and performs subtraction between the parsed
+expressions as fractions.
+ */
+Fraction calcMins(String str) {
+    Vec<Fraction> minVals;
+    Vec<String> x = split(str, "-");
+    for (int i = 0; i < x.size(); ++i) {
+        trim(x[i]);
+        if ((int)x[i].find('*') != -1) {
+            minVals.push_back(calcDivs(x[i]));
+        } else if ((int)x[i].find('/') != -1) {
+            minVals.push_back(calcDivs(x[i]));
+        } else {
+            minVals.push_back(Fraction(std::stod(x[i])));
+        }
+    }
+
+    Fraction retval = minVals[0];
+
+    for (int i = 1; i < minVals.size(); i++) {
+        retval = retval - minVals[i];
+    }
+
+    return retval;
+}
+
+/**
+Takes a string containing expressions separated
+by `+` and performs addition between the parsed
+expressions as fractions.
+ */
 Fraction calcAdds(String str) {
     Vec<Fraction> addVals;
     Vec<String> x = split(str, "+");
@@ -144,71 +229,13 @@ Fraction calcAdds(String str) {
     return retval;
 }
 
-Fraction calcMins(String str) {
-    Vec<Fraction> minVals;
-    Vec<String> x = split(str, "-");
-    for (int i = 0; i < x.size(); ++i) {
-        trim(x[i]);
-        if ((int)x[i].find('*') != -1) {
-            minVals.push_back(calcDivs(x[i]));
-        } else if ((int)x[i].find('/') != -1) {
-            minVals.push_back(calcDivs(x[i]));
-        } else {
-            minVals.push_back(Fraction(std::stod(x[i])));
-        }
-    }
+/**
+Trims a string at both ends to remove whitespace.
 
-    Fraction retval = minVals[0];
-
-    for (int i = 1; i < minVals.size(); i++) {
-        retval = retval - minVals[i];
-    }
-
-    return retval;
-}
-
-Fraction calcMuls(String str) {
-    Vec<Fraction> mulVals;
-    Vec<String> x = split(str, "*");
-
-    for (int i = 0; i < x.size(); ++i) {
-        trim(x[i]);
-
-        if ((int)x[i].find('/') != -1) {
-            mulVals.push_back(calcDivs(x[i]));
-        } else {
-            mulVals.push_back(Fraction(std::stod(x[i])));
-        }
-    }
-
-    Fraction retval(1.0);
-
-    for (int i = 0; i < mulVals.size(); i++) {
-        retval = retval * mulVals[i];
-    }
-
-    return retval;
-}
-
-Fraction calcDivs(String str) {
-    Vec<double> divVals;
-    Vec<String> x = split(str, "/");
-
-    for (int i = 0; i < x.size(); ++i) {
-        trim(x[i]);
-        
-        divVals.push_back(std::stod(x[i]));
-    }
-
-    Fraction retval(divVals[0]);
-    for (int i = 1; i < divVals.size(); ++i) {
-        retval = retval / Fraction(divVals[i]);
-    }
-
-    return retval;
-}
-
-// trim from both ends (in place)
+Notes:
+ - Not my code, came from StackOverflow.
+ - Performs trimming in place.
+ */
 static inline void trim(String &s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
         return !std::isspace(ch);
@@ -219,6 +246,12 @@ static inline void trim(String &s) {
     }).base(), s.end());
 }
 
+/**
+Operator implementation to allow printing the Fraction
+class for the user to see, shown as `numerator / denominator`
+unless `denominator` is `1`, in which case it's shown
+as `numerator`.
+ */
 std::ostream &operator<<(std::ostream& op, Fraction fraction) {
     if (fraction.denominator != 1) {
         return op << fraction.numerator << "/" << fraction.denominator;
@@ -227,6 +260,14 @@ std::ostream &operator<<(std::ostream& op, Fraction fraction) {
     }
 }
 
+/**
+Takes a string and an index at which the word `sqrt` is,
+then checks for `n` before it to use as a root, before
+passing finding the section of the string in which the
+inner expression of the surd is located and parsing it,
+before finally erasing that section of the string for
+future function calls.
+ */
 Surd parseSurd(String& temp, size_t index) {
     int root = 2;
 
@@ -257,7 +298,7 @@ Surd parseSurd(String& temp, size_t index) {
         current_sqrt = a.substr(0, f);
     }
 
-    Surd s = Surd(calcInner(current_sqrt), root);
+    Surd s = Surd(calcAdds(current_sqrt), root);
 
     temp.erase(0, f + index + 6);
     return s;
