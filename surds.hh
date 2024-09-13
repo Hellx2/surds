@@ -8,6 +8,11 @@
     #include <iostream>
     #include <vector>
 
+    /**
+    A class for representing a surd, contains a fraction to
+    represent the inner expression, and a root to use as the
+    n-th root for simplification.
+     */
     class Surd {
         public:
             Fraction inner = Fraction(0.0);
@@ -41,6 +46,12 @@
                 return Surd(inner * other.inner, root);
             }
 
+            /**
+            Takes the current Surd and simplifies it, extracting
+            all of the squares and placing them into the first
+            fraction returned, before placing the inside of the
+            root into the second fraction.
+             */
             std::vector<Fraction> extractSquares() {
                 Fraction frac = inner;
                 Fraction a(1.0);
