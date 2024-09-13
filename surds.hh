@@ -42,41 +42,42 @@
             }
 
             std::vector<Fraction> extractSquares() {
+                std::cout << root << std::endl;
                 Fraction frac = inner;
                 Fraction a(1.0);
                 
                 numerator:
                 double x = std::sqrt(frac.numerator);
-                
-                if (std::floor(x) != x) {
+
+                if (std::floor(x) == x && root == 2) {
+                    a.numerator = x;
+                    frac.numerator = 1;
+                } else {
                     for (int b = std::floor(x); b >= 2; b--) {
-                        double y = (double)frac.numerator / (b * b);
+                        double y = (double)frac.numerator / std::pow(b, root);
                         if (y == std::floor(y)) {
                             a.numerator *= b;
-                            frac.numerator /= b * b;
+                            frac.numerator /= std::pow(b, root);
                             goto numerator;
                         }
                     }
-                } else {
-                    a.numerator = x;
-                    frac.numerator /= x * x;
-                }
+                } 
 
                 denominator:
                 x = std::sqrt(frac.denominator);
 
-                if (std::floor(x) != x) {
+                if (std::floor(x) == x && root == 2) {
+                    a.denominator = x;
+                    frac.denominator = 1;
+                } else {
                     for (int b = std::floor(x); b >= 2; b--) {
-                        double y = (double)frac.denominator / (b * b);
+                        double y = (double)frac.denominator / std::pow(b, root);
                         if (y == std::floor(y)) {
                             a.denominator *= b;
-                            frac.denominator /= b * b;
+                            frac.denominator /= std::pow(b, root);
                             goto denominator;
                         }
                     }
-                } else {
-                    a.denominator = x;
-                    frac.denominator /= x * x;
                 }
 
                 return {a, frac};

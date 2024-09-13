@@ -80,8 +80,10 @@ void simplify() {
                     std::cout << x[0] << ((x[1].numerator == 1 && x[1].denominator == 1) ? "" : " * ");
                     a = true;
                 }
-                if (x[1].numerator != 1 || x[1].denominator != 1)
+                if (x[1].numerator != 1 || x[1].denominator != 1) {
+                    if (s.root != 2) std::cout << s.root;
                     std::cout << "sqrt(" << x[1] << ")" << std::endl;
+                }
                 else if(!a) std::cout << x[1] << std::endl;
                 else std::cout << std::endl;
             }
@@ -227,16 +229,20 @@ Surd parseSurd(std::string& temp, size_t index) {
     int root = 2;
     
     if (index > 0 && !std::isspace(temp[index - 1])) {
-        int x = temp.rfind(' ', index - 1);
+        int x = temp.rfind(' ', index);
         std::string a;
-        if (x == -1) {
-            a = temp.substr(0, index - 1);
+        std::cout << (int)x << std::endl;
+        if ((int)x == -1) {
+            a = temp.substr(0, index);
         } else {
-            a = temp.substr(x, index - 1);
+            a = temp.substr(x, index);
         }
-        if (!a.empty() && a.find(')') == -1) {
+        std::cout << "'" << a << "', " << (int)a.find(')') << std::endl;
+        if (!a.empty() && (int)a.find(')') == -1) {
             root = std::stoi(a);
+            std::cout << "e" << root << std::endl;
         }
+        std::cout << "e" << std::endl;
     }
 
     if (index == temp.npos) {
@@ -256,7 +262,7 @@ Surd parseSurd(std::string& temp, size_t index) {
         current_sqrt = a.substr(0, f);
     }
 
-    Surd s = Surd(calcInner(current_sqrt));
+    Surd s = Surd(calcInner(current_sqrt), root);
     std::cout << s.inner << std::endl;
 
     temp.erase(0, f + index + 6);
