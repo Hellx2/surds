@@ -7,31 +7,32 @@
 #include "fractions.hh"
 #include "surds.hh"
 
-static inline void ltrim(std::string& s);
-static inline void rtrim(std::string& s);
-static inline void trim(std::string& s);
+using String = std::string;
+template <class T> using Vec = std::vector<T>;
 
-std::vector<std::string> split(std::string s, const std::string &delimiter);
+static inline void trim(String& s);
+
+Vec<String> split(String s, const String &delimiter);
 
 std::ostream &operator<<(std::ostream& op, Fraction fraction);
 
 void simplify();
 void expand();
 
-Fraction calcInner(std::string inner);
+Fraction calcInner(String inner);
 
-Fraction calcAdds(std::string str);
-Fraction calcMins(std::string str);
-Fraction calcMuls(std::string str);
-Fraction calcDivs(std::string str);
+Fraction calcAdds(String str);
+Fraction calcMins(String str);
+Fraction calcMuls(String str);
+Fraction calcDivs(String str);
 
 // TODO: Implement simplification of multi-surd expressions
-Surd surdAdds(std::vector<Surd> surds);
-Surd surdMins(std::vector<Surd> surds);
-Surd surdMuls(std::vector<Surd> surds);
-Surd surdDivs(std::vector<Surd> surds);
+Surd surdAdds(Vec<Surd> surds);
+Surd surdMins(Vec<Surd> surds);
+Surd surdMuls(Vec<Surd> surds);
+Surd surdDivs(Vec<Surd> surds);
 
-Surd parseSurd(std::string &temp, size_t index);
+Surd parseSurd(String &temp, size_t index);
 
 int main() {
     std::cout << "The following functions are available:" << std::endl
@@ -43,9 +44,9 @@ int main() {
 
     short option;
     std::cin >> option;
-    
+
     {
-        std::string temp;
+        String temp;
         std::getline(std::cin, temp);
     }
 
@@ -61,30 +62,36 @@ int main() {
 }
 
 void simplify() {
-    std::string surd;
-    
+    String surd;
+
     std::cout << "Enter (a) surd(s) to simplify (use 'sqrt' in place of the surd sign): ";
     std::getline(std::cin, surd);
 
-    if (surd.find("sqrt") != -1) {
-        std::vector<std::string> vars = split(surd, ",");
-        std::string temp = surd;
+    if ((int)surd.find("sqrt") != -1) {
+        Vec<String> vars = split(surd, ",");
+        String temp = surd;
         size_t index;
 
         for (int i = 0; i < vars.size(); i++) {
             while((int)(index = vars[i].find("sqrt")) != -1) {
-                Surd s = parseSurd(vars[i], index);
-                std::vector<Fraction> x = s.extractSquares();
                 bool a = false;
+
+                Surd s = parseSurd(vars[i], index);
+                Vec<Fraction> x = s.extractSquares();
+
                 if (x[0].numerator != 1 || x[0].denominator != 1) {
                     std::cout << x[0] << ((x[1].numerator == 1 && x[1].denominator == 1) ? "" : " * ");
                     a = true;
                 }
+
                 if (x[1].numerator != 1 || x[1].denominator != 1) {
-                    if (s.root != 2) std::cout << s.root;
+                    if (s.root != 2)
+                        std::cout << s.root;
+
                     std::cout << "sqrt(" << x[1] << ")";
+                } else if (!a) {
+                    std::cout << x[1];
                 }
-                else if(!a) std::cout << x[1];
                 std::cout << std::endl;
             }
         }
@@ -92,28 +99,30 @@ void simplify() {
 }
 
 // delimiter is a reference to reduce allocations
-std::vector<std::string> split(std::string s, const std::string& delimiter) {
-    std::vector<std::string> tokens;
+Vec<String> split(String s, const String& delimiter) {
+    Vec<String> tokens;
     size_t pos = 0;
-    std::string token;
-    while ((pos = s.find(delimiter)) != std::string::npos) {
+    String token;
+
+    while ((int)(pos = s.find(delimiter)) != -1) {
         token = s.substr(0, pos);
         tokens.push_back(token);
         s.erase(0, pos + delimiter.length());
     }
+
     tokens.push_back(s);
 
     return tokens;
 }
 
-Fraction calcInner(std::string inner) {
+Fraction calcInner(String inner) {
     return calcAdds(inner);
 }
 
-Fraction calcAdds(std::string str) {
-    std::vector<Fraction> addVals;
-    std::vector<std::string> x = split(str, "+");
-    
+Fraction calcAdds(String str) {
+    Vec<Fraction> addVals;
+    Vec<String> x = split(str, "+");
+
     for (int i = 0; i < x.size(); ++i) {
         trim(x[i]);
         if ((int)x[i].find('-') != -1) {
@@ -135,9 +144,9 @@ Fraction calcAdds(std::string str) {
     return retval;
 }
 
-Fraction calcMins(std::string str) {
-    std::vector<Fraction> minVals;
-    std::vector<std::string> x = split(str, "-");
+Fraction calcMins(String str) {
+    Vec<Fraction> minVals;
+    Vec<String> x = split(str, "-");
     for (int i = 0; i < x.size(); ++i) {
         trim(x[i]);
         if ((int)x[i].find('*') != -1) {
@@ -150,7 +159,7 @@ Fraction calcMins(std::string str) {
     }
 
     Fraction retval = minVals[0];
-    
+
     for (int i = 1; i < minVals.size(); i++) {
         retval = retval - minVals[i];
     }
@@ -158,12 +167,13 @@ Fraction calcMins(std::string str) {
     return retval;
 }
 
-Fraction calcMuls(std::string str) {
-    std::vector<Fraction> mulVals;
-    std::vector<std::string> x = split(str, "*");
-    
+Fraction calcMuls(String str) {
+    Vec<Fraction> mulVals;
+    Vec<String> x = split(str, "*");
+
     for (int i = 0; i < x.size(); ++i) {
         trim(x[i]);
+
         if ((int)x[i].find('/') != -1) {
             mulVals.push_back(calcDivs(x[i]));
         } else {
@@ -172,7 +182,7 @@ Fraction calcMuls(std::string str) {
     }
 
     Fraction retval(1.0);
-    
+
     for (int i = 0; i < mulVals.size(); i++) {
         retval = retval * mulVals[i];
     }
@@ -180,9 +190,10 @@ Fraction calcMuls(std::string str) {
     return retval;
 }
 
-Fraction calcDivs(std::string str) {
-    std::vector<double> divVals;
-    std::vector<std::string> x = split(str, "/");
+Fraction calcDivs(String str) {
+    Vec<double> divVals;
+    Vec<String> x = split(str, "/");
+
     for (int i = 0; i < x.size(); ++i) {
         trim(x[i]);
         
@@ -197,24 +208,15 @@ Fraction calcDivs(std::string str) {
     return retval;
 }
 
-// trim from start (in place)
-static inline void ltrim(std::string &s) {
+// trim from both ends (in place)
+static inline void trim(String &s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
         return !std::isspace(ch);
     }));
-}
 
-// trim from end (in place)
-static inline void rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
         return !std::isspace(ch);
     }).base(), s.end());
-}
-
-// trim from both ends (in place)
-static inline void trim(std::string &s) {
-    ltrim(s);
-    rtrim(s);
 }
 
 std::ostream &operator<<(std::ostream& op, Fraction fraction) {
@@ -225,17 +227,13 @@ std::ostream &operator<<(std::ostream& op, Fraction fraction) {
     }
 }
 
-Surd parseSurd(std::string& temp, size_t index) {
+Surd parseSurd(String& temp, size_t index) {
     int root = 2;
-    
+
     if (index > 0 && !std::isspace(temp[index - 1])) {
         int x = temp.rfind(' ', index);
-        std::string a;
-        if ((int)x == -1) {
-            a = temp.substr(0, index);
-        } else {
-            a = temp.substr(x, index);
-        }
+        String a = temp.substr(x == -1 ? 0 : x, index);
+
         if (!a.empty() && (int)a.find(')') == -1) {
             root = std::stoi(a);
         }
@@ -243,13 +241,14 @@ Surd parseSurd(std::string& temp, size_t index) {
 
     if (index == temp.npos) {
         std::cout << "No surds found to simplify!" << std::endl;
-        return (Surd)NULL;
+        return Surd(Fraction(1.0));
     }
 
-    std::string current_sqrt;
+    String current_sqrt;
+    String a = temp.substr(index + 4);
 
-    std::string a = temp.substr(index + 4);
     int f;
+
     if (a[0] == '(') {
         f = a.find(")") - 1;
         current_sqrt = a.substr(1, f);
