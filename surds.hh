@@ -42,7 +42,6 @@
             }
 
             std::vector<Fraction> extractSquares() {
-                std::cout << root << std::endl;
                 Fraction frac = inner;
                 Fraction a(1.0);
                 
