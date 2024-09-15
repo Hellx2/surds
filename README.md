@@ -13,3 +13,7 @@ Notes:
 - The available operations are: `/` for division, `*` for multiplication, `-` for subtraction, and `+` for addition.
 - Extracts the greatest common root from two roots when adding or subtracting them and shows it in a coefficient-surd format.
 - `3sqrt(27)` means the 3rd root of 27 (if there is a space between the 3 and the `sqrt` then it will only do the square root)
+
+To compile yourself:
+- If on Linux, simply download the code and run `cmake . && make && ./surds`, as well as `x86_64-w64-mingw32-g++ main.cpp --static -o surds.exe`
+- On Windows, change the line for the executable in the CMakeLists.txt to say `add_executable(surds.exe main.cpp)` and compile the project with CMake.
