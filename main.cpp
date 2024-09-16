@@ -182,8 +182,9 @@ void simplify() {
                     if (j < op.size()) goto loop_inner;
                 } else if (op[j] == Div) {
                     surds[j] = surds[j].surd / surds[j + 1].surd;
+                    op.erase(op.begin() + j);
                     surds.erase(surds.begin() + j + 1);
-                    goto loop_inner;
+                    if (j < op.size()) goto loop_inner;
                 } else if (op[j] == Add) {
                     if (j == op.size() - 1 || (op[j + 1] != Mul && op[j + 1] != Div)) {
                         surds[j] = Number::fromExpression(surds[j].surd + surds[j + 1].surd);
