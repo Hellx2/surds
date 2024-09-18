@@ -4,73 +4,15 @@
 #include <cstdlib>
 #include <vector>
 
+#include "fractions.cpp"
+
 #ifndef _MAIN_HH_
     #define _MAIN_HH_
 
     class Surd;
     class Fraction;
-    
     class Number;
-
     class Expression;
-    
-    class Fraction {
-        public:
-            int numerator;
-            int denominator;
-
-            explicit Fraction(int numerator, int denominator) {
-                this->numerator = numerator;
-                this->denominator = denominator;
-            }
-
-            Fraction(double x) {
-                if (x == std::floor(x)) {
-                    this->numerator = x;
-                    this->denominator = 1;
-                } else {
-                    double b, c;
-                    
-                    if (x < 1) {
-                        b = 1 / x;
-                        c = x * b;
-                    } else {
-                        b = 1 / (x - std::floor(x));
-                        c = x * b;
-                    }
-
-                    this->numerator = c;
-                    this->denominator = b;
-                }
-            }
-
-            Fraction simplify() {
-                int x = std::gcd(numerator, denominator);
-                return Fraction(numerator / x, denominator / x);
-            }
-
-            Fraction operator+(Fraction x) {
-                int denom = x.denominator * denominator;
-                return Fraction(x.numerator * denom / x.denominator + numerator * denom / denominator, denom).simplify();
-            }
-
-            Fraction operator-(Fraction x) {
-                int denom = x.denominator * denominator;
-                return Fraction(x.numerator * denom / x.denominator - numerator * denom / denominator, denom).simplify();
-            }
-
-            Fraction operator*(Fraction x) {
-                return Fraction(x.numerator * numerator, x.denominator * denominator).simplify();
-            }
-
-            Fraction operator/(Fraction x) {
-                return Fraction(x.denominator * numerator, x.numerator * denominator).simplify();
-            }
-
-            Fraction operator+(double x) {
-                return Fraction(x * numerator, denominator);
-            }
-    };
 
     /**
     A class for representing a surd, contains a fraction to
