@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <iostream>
@@ -6,8 +5,9 @@
 #include <vector>
 
 #include "main.hh"
+#include "fractions.hh"
 
-void simplify();
+void simplify(String msg);
 void expand();
 
 Surd parseSurd(String &temp, size_t index);
@@ -36,7 +36,7 @@ int main() {
 
     switch (option) {
         case 1:
-            simplify();
+            simplify("Enter (a) surd(s) to simplify (use 'sqrt' in place of the surd sign): ");
             break;
         case 2:
             //expand();
@@ -52,9 +52,9 @@ and then goes through each one and passes them to
 the `parseSurd` function before displaying them to
 the user.
  */
-void simplify() {
+void simplify(String msg) {
     String surd;
-    std::cout << "Enter (a) surd(s) to simplify (use 'sqrt' in place of the surd sign): ";
+    std::cout << msg;
     std::getline(std::cin, surd);
     std::cout << std::endl;
 
@@ -79,7 +79,7 @@ void simplify() {
                 Vec<Fraction> x = s.extractSquares();
 
                 double b = c - 10 * std::floor(std::log10(c));
-                std::cout << c << (b == 1 ? "st" : (b == 2 ? "nd" : (b == 3 ? "rd" : "th"))) << " item: ";
+                std::cout << c << (b == 1 ? "st" : (b == 2 ? "nd" : (b == 3 ? "rd" : "th"))) << " surd: ";
                 
                 if (x[0].numerator != 1 || x[0].denominator != 1) {
                     std::cout << x[0] << ((x[1].numerator == 1 && x[1].denominator == 1) ? "" : " * ");
@@ -102,9 +102,32 @@ void simplify() {
                 ops.push_back(vars[i]);
             }
 
-            int j;
+            if (ops.size() >= 1) {
+                trim(ops[i]);
+                String z = ops[i];
+                if (!ops[i].empty()) {
+                    Fraction f = calcAdds(z.substr(0, z.length() - 1));
+                    f = f * f;
+                    surds.push_back(Surd(f));
+                    char c = z[z.length() - 1];
+                    if (c == '+') {
+                        op.push_back(Add);
+                    } else if (c == '-') {
+                        op.push_back(Min);
+                    } else if (c == '*') {
+                        op.push_back(Mul);
+                    } else if (c == '/') {
+                        op.push_back(Div);
+                    } else {
+                        std::cout << "Missing operator!" << std::endl;
+                        return;
+                    }
+                }
+            }
 
-            for (j = 0; j < (ops.size() - (vars[i].empty() ? 0 : 1)); j++) {
+            int j;
+            
+            for (j = 1; j < (ops.size() - (vars[i].empty() ? 0 : 1)); j++) {
                 String x = ops[j];
                 trim(x);
                 if (!x.empty()) {
@@ -123,16 +146,31 @@ void simplify() {
                     String z = x.substr(1);
                     trim(z);
                     if (!z.empty()) {
-                        std::cout << calcAdds(z) << std::endl;
+                        Fraction f = calcAdds(z.substr(0, z.length() - 1));
+                        f = f * f;
+                        surds.push_back(Surd(f));
+                        char c = z[z.length() - 1];
+                        if (c == '+') {
+                            op.push_back(Add);
+                        } else if (c == '-') {
+                            op.push_back(Min);
+                        } else if (c == '*') {
+                            op.push_back(Mul);
+                        } else if (c == '/') {
+                            op.push_back(Div);
+                        } else {
+                            std::cout << "Missing operator!" << std::endl;
+                            return;
+                        }
                     }
                 }
             }
 
             if (!vars[i].empty()) {
                 String f = ops[ops.size() - 1];
+                trim(f);
 
                 if (!f.empty()) {
-                    trim(f);
                     if (f[0] == '+') {
                         op.push_back(Add);
                     } else if (f[0] == '-') {
@@ -150,14 +188,37 @@ void simplify() {
                     trim(a);
 
                     if (!a.empty()) {
-                        std::cout << calcAdds(a) << std::endl;
-                        
-                        surds.push_back(calcAdds(a));
+                        Fraction f = calcAdds(a);
+                        f = f * f;
+                        surds.push_back(Surd(f));
                     }
                 }
             }
 
             std::cout << std::endl;
+
+            if (surds.size() == 1) {
+                if(surds[0].x == 0) {
+                    Vec<Fraction> x = surds[0].surd.extractSquares();
+                    bool a = false;
+
+                    if (x[0].numerator != 1 || x[0].denominator != 1) {
+                        std::cout << x[0] << ((x[1].numerator == 1 && x[1].denominator == 1) ? "" : " * ");
+                        a = true;
+                    }
+
+                    if (x[1].numerator != 1 || x[1].denominator != 1) {
+                        if (surds[0].surd.root != 2)
+                            std::cout << surds[0].surd.root;
+                        std::cout << "sqrt(" << x[1] << ")";
+                    } else if (!a) {
+                        std::cout << x[1];
+                    }
+                    std::cout << std::endl;
+                } else if (surds[0].x == 2) {
+                    surds[0].expression->display();
+                }
+            }
             
             for(int j = 0; j < op.size(); j++) {
                 loop_inner:
